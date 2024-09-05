@@ -12,5 +12,5 @@ class CourseInstanceSerializer(serializers.ModelSerializer):
    
     class Meta:
         model = CourseInstance
-        fields =['id', 'course', 'year', 'semester']
+        fields ='__all__'
     

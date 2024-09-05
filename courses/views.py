@@ -25,6 +25,15 @@ def add_course(request):
     
     return Response({'success': False, 'message': 'Validation failed.', 'errors': serializer.errors}, status=400)
 
+@api_view(['GET'])
+def get_instances_by_year_and_semester(request):
+    year = request.query_params.get('year')
+    semester = request.query_params.get('semester')
+    instances = CourseInstance.objects.filter(year=year, semester=semester)
+    serializer = CourseInstanceSerializer(instances, many=True)
+    return Response(serializer.data)
+
+
 class CourseDeleteByCodeView(APIView):
     def delete(self, request, course_code):
         try:
@@ -42,6 +51,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 class CourseListCreateView(generics.ListCreateAPIView):
     queryset = Course.objects.all()
     serializer_class = CourseSerializers
+    
 
 class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Course.objects.all()
@@ -52,23 +62,19 @@ class CourseDetailView(generics.RetrieveUpdateDestroyAPIView):
 class CourseInstanceListCreateView(generics.ListCreateAPIView):
     queryset = CourseInstance.objects.all()
     serializer_class = CourseInstanceSerializer
-    lookup_field = 'course_code'
+    def get_queryset(self):
+        queryset = CourseInstance.objects.all()
+        year = self.kwargs.get('year')
+        semester = self.kwargs.get('semester')
 
-
-def get_queryset(self):
-        queryset = super().get_queryset()
-    
-        year = self.kwargs.get('year', None)
-        semester = self.kwargs.get('semester', None)
-    
-   
         if year is not None:
             queryset = queryset.filter(year=year)
         if semester is not None:
             queryset = queryset.filter(semester=semester)
-        
 
         return queryset
+
+
 
 
 class CourseInstanceDetailView(generics.RetrieveDestroyAPIView):
